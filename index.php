@@ -1,6 +1,11 @@
 <?php
-    require('class/post.php');
-    $post = new Post($db);
+    require('app/init.php');
+    
+    if (!empty($_POST)) {
+        $post->store();
+    }
+
+    session_destroy();
 ?>
 
 <!DOCTYPE html>
@@ -9,28 +14,19 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Timedoor - Challenge</title>
-    <style>
-        p {
-            width: 367px;
-        }
-        p.date {
-            text-align: right;
-        }
-        p.alert {
-            text-align: center;
-            color: red;
-        }
-    </style>
 </head>
+<style>
+    p {
+        width: 367px;
+    }
+    
+    p.error-message {
+        color: red;
+        text-align: center;
+    }
+</style>
 <body>
-    <p class="alert">
-        <?php
-            if (isset($_POST['submit'])){
-                $redirect = $post->store($_POST);
-                header($redirect);
-            }
-        ?>
-    </p>
+    <p class="error-message"><?= $_SESSION['error_message'] ?? null; ?></p> 
     <form action="./index.php" method="post">
         <div>
             <label for="title">Title</label><br>
@@ -42,16 +38,14 @@
             <textarea name="body" id="body" cols="50" rows="10"></textarea>
         </div>
         <div>
-            <input type="submit" name="submit" value="submit">
+            <input type="submit" value="submit">
         </div>
     </form>
-    <?php if ($result = $post->list()) { ?>
-        <?php while ($data = mysqli_fetch_object($result)) { ?>
-            <hr>
-            <p><?= $data->title ?></p>
-            <p><?= $data->body ?></p>
-            <p class='date'><?= $data->created_at ?></p>
-        <?php } mysqli_free_result($result); ?> 
-    <?php } ?>
+    <?php foreach ($post->show() as $data) : ?>
+        <hr>
+        <p><?= $data->title ?></p>
+        <p><?= $data->body ?></p>
+        <p style="text-align:right"><?= $data->created_at ?></p>
+    <?php endforeach; ?>
 </body>
 </html>
